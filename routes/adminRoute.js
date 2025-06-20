@@ -1,14 +1,17 @@
 import express from 'express';
-import { addDoctor, loginAdmin } from '../controllers/adminController.js';
+import { addDoctor, allDoctors, loginAdmin } from '../controllers/adminController.js';
 import upload from '../middlewares/multer.js';
+import authAdmin from '../middlewares/authAdmin.js';
 
 const adminRouter = express.Router();
 
-// Only apply multer to /add-doctor route
-adminRouter.post('/add-doctor', upload.single('image'), addDoctor);
+// Route: Add a new doctor (requires authentication and image upload)
+adminRouter.post('/add-doctor', authAdmin, upload.single('image'), addDoctor);
 
-// No multer on login route
+// Route: Admin login (no authentication or multer required)
 adminRouter.post('/login', loginAdmin);
 
-export default adminRouter;
+// Route: Fetch all doctors (requires admin authentication)
+adminRouter.post('/all-doctors', authAdmin, allDoctors);
 
+export default adminRouter;

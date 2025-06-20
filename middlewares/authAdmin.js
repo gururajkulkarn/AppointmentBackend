@@ -21,3 +21,5 @@ next()
     res.json({ success: false, message: error.message });
   }
 }
+
+export default authAdmin;
