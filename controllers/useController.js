@@ -1,8 +1,10 @@
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import userModel from "../models/userModel.js"; // Make sure this path is correct
 import {v2 as cloudinary} from "cloudinary";
+import userModel from "../models/userModel.js"; // Make sure this path is correct
+import doctorModel from "../models/doctorModel.js"; // Make sure this path is correct
+import appointmentModel from "../models/appointmentModel.js";
 
 const registerUser = async (req, res) => {
   try {
@@ -119,6 +121,71 @@ res.json({ success: true, message: "profile updated successfully" });
 };
 
 
+// Api fro apponitment data
+const bookAppointment = async (req, res) => {
+  try {
+
+    const { userId, docId, slotDate, slotTime } = req.body;
+
+    const docData = await doctorModel.findById(docId).select("-password");
+
+    if(!docData){
+      return res.json({success: false, message: "Doctor not found"});
+    }
+    let slots_booked = docData.slots_booked
+
+    // checking for slot availability
+    if(slots_booked [slotDate]){
+      if(slots_booked[slotDate].includes(slotTime)){
+        return res.json({success: false, message: "Slot already booked"});
+      }
+      else{
+        slots_booked[slotDate].push(slotTime);
+      }
+
+      const userData = await userModel.findById(userId).select("-password");
+      delete docData.slots_booked;
+
+      const appointmentData = {
+        userId,
+        docId,
+        userData,
+        docData,
+        slotTime,
+        slotDate,
+        amount: docData.fees,
+        date: Date.now(),
+      };
+const newAppointment = new appointmentModel(appointmentData);
+await newAppointment.save();
+
+// save new slots in doc data
+await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+
+res.json({success: true, message: "Appointment booked successfully"});
 
 
-export { registerUser, loginUser, getProfile, updateProfile };
+
+    }
+else{
+  slots_booked[slotDate] = [];
+  slots_booked[slotDate].push(slotTime);
+
+}
+
+
+  }
+  catch (error) {
+    console.error("Error in bookAppointment:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+
+
+}
+
+
+
+
+
+
+export { registerUser, loginUser, getProfile, updateProfile, bookAppointment };
