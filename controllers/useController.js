@@ -97,6 +97,8 @@ const updateProfile = async (req, res) => {
     const { name, phone, address, dob, gender,email } = req.body;
     const imageFile = req.file;
 
+      console.log("Received file:", imageFile);
+
     if (!name || !phone || !dob || !gender) {
       return res.status(400).json({ message: "Please provide all required fields" });
     }
@@ -105,7 +107,7 @@ const updateProfile = async (req, res) => {
   
  if(imageFile) {
   const imageUpload = await cloudinary.uploader.upload(imageFile.path,{resource_type: "image"})
-  imageURL = imageUpload.secure_url;
+  const imageURL = imageUpload.secure_url;
   await userModel.findByIdAndUpdate(userId, { image: imageURL });
  }
 
