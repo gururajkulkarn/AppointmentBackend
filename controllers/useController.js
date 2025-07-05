@@ -1,7 +1,7 @@
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import {v2 as cloudinary} from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 import userModel from "../models/userModel.js"; // Make sure this path is correct
 import doctorModel from "../models/doctorModel.js"; // Make sure this path is correct
 import appointmentModel from "../models/appointmentModel.js";
@@ -77,51 +77,56 @@ const loginUser = async (req, res) => {
 
 const getProfile = async (req, res) => {
   try {
-
-       const userId = req.user.id;
+    const userId = req.user.id;
 
     const userData = await userModel.findById(userId).select("-password");
-    res.json({ success: true, user: userData, });
+    res.json({ success: true, user: userData });
   } catch (error) {
     console.error("Error in getProfile:", error);
     return res.json({ message: "Internal server error" });
   }
 };
 
-
 // API TO Update user profile data
 
 const updateProfile = async (req, res) => {
   try {
-
     // const {userId, name, phone,address,dob,gender } = req.user.id;
-   
+
     const userId = req.user.id;
-    const { name, phone, address, dob, gender,email } = req.body;
+    const { name, phone, address, dob, gender, email } = req.body;
     const imageFile = req.file;
 
-      console.log("Received file:", imageFile);
+    console.log("Received file:", imageFile);
 
     if (!name || !phone || !dob || !gender) {
-      return res.status(400).json({ message: "Please provide all required fields" });
+      return res
+        .status(400)
+        .json({ message: "Please provide all required fields" });
     }
 
- await userModel.findByIdAndUpdate(userId, {name,phone,address,dob,gender,email})
-  
- if(imageFile) {
-  const imageUpload = await cloudinary.uploader.upload(imageFile.path,{resource_type: "image"})
-  const imageURL = imageUpload.secure_url;
-  await userModel.findByIdAndUpdate(userId, { image: imageURL });
- }
+    await userModel.findByIdAndUpdate(userId, {
+      name,
+      phone,
+      address,
+      dob,
+      gender,
+      email,
+    });
 
-res.json({ success: true, message: "profile updated successfully" });
+    if (imageFile) {
+      const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
+        resource_type: "image",
+      });
+      const imageURL = imageUpload.secure_url;
+      await userModel.findByIdAndUpdate(userId, { image: imageURL });
+    }
 
+    res.json({ success: true, message: "profile updated successfully" });
   } catch (error) {
     return res.json({ message: "Internal server error" });
   }
 };
-
-
 
 const bookAppointment = async (req, res) => {
   try {
@@ -167,77 +172,77 @@ const bookAppointment = async (req, res) => {
     // Save updated slots in doctor
     await doctorModel.findByIdAndUpdate(docId, { slots_booked });
 
-    return res.json({ success: true, message: "Appointment booked successfully" });
+    return res.json({
+      success: true,
+      message: "Appointment booked successfully",
+    });
   } catch (error) {
     console.error("Error in bookAppointment:", error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };
 
-
 // API FOR MY AppointmentData for user
-const listAppointment = async (req,res) => {
+const listAppointment = async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-try{
-
-
- const userId = req.user.id;
-
-const appointments = await appointmentModel.find({ userId})
-res.json({ success: true, appointments });
-
-}
-
-catch (error) {
-  console.error("Error in listAppointment:", error);
-  return res.status(500).json({ success: false, message: "Internal server error" });
-
-}
-
-}
-
+    const appointments = await appointmentModel.find({ userId });
+    res.json({ success: true, appointments });
+  } catch (error) {
+    console.error("Error in listAppointment:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
 
 // API TO CANCEL APPOINTMENT
 
 const cancelAppointment = async (req, res) => {
-  try { 
-
-  const { appointmentId } = req.body;
-  const userId = req.user.id;
-
-  
+  try {
+    const { appointmentId } = req.body;
+    const userId = req.user.id;
 
     // Find the appointment
-    const appointmentData = await appointmentModel.findById(appointmentId)
-   
+    const appointmentData = await appointmentModel.findById(appointmentId);
+
     // varify appointment user
     if (appointmentData.userId !== userId) {
-      return res.json({ success: false, message: "You are not authorized to cancel this appointment" });
+      return res.json({
+        success: false,
+        message: "You are not authorized to cancel this appointment",
+      });
     }
 
-   await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
+    await appointmentModel.findByIdAndUpdate(appointmentId, {
+      cancelled: true,
+    });
 
-  //  releasing doctor slots
+    //  releasing doctor slots
 
-  const {docId, slotDate, slotTime} = appointmentData;
-  const doctorData = await doctorModel.findById(docId);
-  let slots_booked = doctorData.slots_booked
-  slots_booked[slotDate] = slots_booked[slotDate].filter(e => e !== slotTime);
+    const { docId, slotDate, slotTime } = appointmentData;
+    const doctorData = await doctorModel.findById(docId);
+    let slots_booked = doctorData.slots_booked;
+    slots_booked[slotDate] = slots_booked[slotDate].filter(
+      (e) => e !== slotTime
+    );
 
-  await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+    await doctorModel.findByIdAndUpdate(docId, { slots_booked });
 
-    return res.json({ success: true, message: "Appointment cancelled successfully" });
-    
-
-  }
-
-  catch (error) {
+    return res.json({
+      success: true,
+      message: "Appointment cancelled successfully",
+    });
+  } catch (error) {
     console.error("Error in cancelAppointment:", error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
-
-}
-
+};
 
 const razorpayInstance = new razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -246,68 +251,69 @@ const razorpayInstance = new razorpay({
 
 // Api to make online payment using razorpay
 
-const paymentRazorpay = async (req,res) => {
-  
-
-// creation of an order
+const paymentRazorpay = async (req, res) => {
+  // creation of an order
   try {
-     const { appointmentId} = req.body;
-  const appointmentData = await appointmentModel.findById(appointmentId);
+    const { appointmentId } = req.body;
+    const appointmentData = await appointmentModel.findById(appointmentId);
 
-  if(!appointmentData || appointmentData.cancelled) {
-    return res.json({ success: false, message: "Invalid appointment" });
-  }
+    if (!appointmentData || appointmentData.cancelled) {
+      return res.json({ success: false, message: "Invalid appointment" });
+    }
 
-// creating options for razorpay payment
+    // creating options for razorpay payment
 
-const options = {
-  amount: appointmentData.amount * 100, // Amount in paise
-  currency: process.env.CURRENCY,
-  receipt: appointmentId,
-
-}
+    const options = {
+      amount: appointmentData.amount * 100, // Amount in paise
+      currency: process.env.CURRENCY,
+      receipt: appointmentId,
+    };
     const order = await razorpayInstance.orders.create(options);
     if (!order) {
-      return res.status(500).json({ success: false, message: "Error creating order" });
+      return res
+        .status(500)
+        .json({ success: false, message: "Error creating order" });
     }
     res.json({ success: true, order });
   } catch (error) {
     console.error("Error in paymentRazorpay:", error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
-
-}
-
+};
 
 // API to verify payment of razorpay
 
 const varifyPayment = async (req, res) => {
   try {
-  const { razorpay_order_id} = req.body;
-  const orderInfo= await razorpayInstance.orders.fetch(razorpay_order_id);
- 
-  if(orderInfo.status == 'paid') {
-    await appointmentModel.findByIdAndUpdate(orderInfo.receipt, { payment: true });
-    return res.json({ success: true, message: "Payment successful" });
-  }
-  else {
-    return res.json({ success: false, message: "Payment failed" });
-  }
-  }
+    const { razorpay_order_id } = req.body;
+    const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
 
-  catch (error) {
+    if (orderInfo.status == "paid") {
+      await appointmentModel.findByIdAndUpdate(orderInfo.receipt, {
+        payment: true,
+      });
+      return res.json({ success: true, message: "Payment successful" });
+    } else {
+      return res.json({ success: false, message: "Payment failed" });
+    }
+  } catch (error) {
     console.error("Error in varifyPayment:", error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
-}
+};
 
-
-
-
-
-
-
-
-
-
-export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment, paymentRazorpay, varifyPayment };
+export {
+  registerUser,
+  loginUser,
+  getProfile,
+  updateProfile,
+  bookAppointment,
+  listAppointment,
+  cancelAppointment,
+  paymentRazorpay,
+  varifyPayment,
+};
