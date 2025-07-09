@@ -20,6 +20,7 @@ app.use(cors());
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
 
+
 app.use((req, res, next) => {
   console.log('🧪 Incoming body:', req.body);
   next();
