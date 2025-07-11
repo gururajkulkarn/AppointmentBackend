@@ -162,8 +162,7 @@ const UpdateDoctorProfile = async (req, res) => {
     const docId = req.user.id;
     const { fees, available } = req.body;
 
-    console.log("🧪 docId:", docId);
-    console.log("🧪 Received fees:", fees, "Available:", available);
+   
 
     const updatedDoctor = await doctorModel.findByIdAndUpdate(
       docId,

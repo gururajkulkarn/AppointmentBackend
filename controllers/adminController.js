@@ -57,7 +57,7 @@ const addDoctor = async (req, res) => {
       resource_type: "image",
     });
 
-    console.log("✅ Cloudinary upload success:", imageUpload.secure_url);
+  
 
     const doctorData = {
       name,
@@ -93,9 +93,9 @@ const addDoctor = async (req, res) => {
 };
 
 const loginAdmin = async (req, res) => {
-  console.log("🟡 req.body at start:", req.body);
+  
   try {
-    console.log("🧪 Raw body:", req.body);
+  
 
     if (!req.body) {
       return res
@@ -111,7 +111,7 @@ const loginAdmin = async (req, res) => {
         .json({ success: false, message: "Email and password are required" });
     }
 
-    console.log("🟢 Login attempt with:", email, password);
+    
 
     if (
       email === process.env.ADMIN_EMAIL &&
