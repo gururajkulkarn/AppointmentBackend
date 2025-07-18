@@ -22,7 +22,7 @@ app.use(cors({
   origin: 'https://docmeetgk.netlify.app', // your frontend domain
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'token']
 }));
 
 app.use(express.json()); // for parsing application/json
