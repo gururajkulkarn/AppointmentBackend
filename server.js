@@ -22,14 +22,10 @@ app.use(cors({
   origin: 'https://docmeetgk.netlify.app', // your frontend domain
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'token'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'token']
 }));
 
-app.use(cors(corsOptions));
 
-// 🔥 this is crucial — handles preflight OPTIONS requests!
-app.options('*', cors(corsOptions));
 
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
