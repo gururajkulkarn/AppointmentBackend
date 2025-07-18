@@ -16,6 +16,7 @@ connectDB();
 connectCloudinary();
 
 // middleware
+
 // app.use(cors());  
 app.use(cors({
   origin: 'https://docmeetgk.netlify.app', // your frontend domain
