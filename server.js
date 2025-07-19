@@ -17,14 +17,24 @@ connectCloudinary();
 
 // middleware
 
-// app.use(cors());  
+const allowedOrigins = [
+  'https://docmeetgk.netlify.app',
+  'https://docmeetadmin.netlify.app'
+];
 app.use(cors({
-  origin: 'https://docmeetgk.netlify.app', // your frontend domain
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'token']
+  // credentials: true
 }));
-
 
 
 app.use(express.json()); // for parsing application/json
